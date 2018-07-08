@@ -44,8 +44,21 @@ app.get('/', (req, res) =>{
   res.send("Hello")
 })
 
-app.get('/api/products', (req, res) =>{
-  res.json(products);
+app.get('/api/products', (req, res) =>{  
+  let result = products
+  let params = req.query
+  
+  
+  if(params.title) {
+    result = result.filter((p) => p.title.indexOf(params.title) !== -1)
+  }
+  if(params.price && result.length > 0) {
+    result = result.filter((p) => p.price <= parseInt(params.price))
+  }
+  if(params.category!= "-1" && result.length > 0) {
+    result = result.filter((p) => p.categories.indexOf(params.category) !== -1)
+  }
+  res.json(result)
 })
 
 app.get('/api/product/:id', (req, res) =>{
