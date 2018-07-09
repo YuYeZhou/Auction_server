@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var express = require("express");
+var ws_1 = require("ws");
 var app = express();
 var Product = /** @class */ (function () {
     function Product(id, title, price, rating, desc, categories) {
@@ -52,7 +53,7 @@ app.get('/api/products', function (req, res) {
     if (params.price && result.length > 0) {
         result = result.filter(function (p) { return p.price <= parseInt(params.price); });
     }
-    if (params.category != "-1" && result.length > 0) {
+    if (params.category && params.category !== "-1" && result.length > 0) {
         result = result.filter(function (p) { return p.categories.indexOf(params.category) !== -1; });
     }
     res.json(result);
@@ -66,3 +67,33 @@ app.get('/api/product/:id/comments', function (req, res) {
 var server = app.listen(8000, "localhost", function () {
     console.log("服务器已经启用");
 });
+var subscriptions = new Map();
+var wsServer = new ws_1.Server({ port: 8085 });
+wsServer.on("connection", function (websocket) {
+    // websocket.send('这是服务器主动推送的消息');
+    websocket.on('message', function (message) {
+        var messageObj = JSON.parse(message);
+        var productIds = subscriptions.get(websocket) || [];
+        subscriptions.set(websocket, productIds.concat([messageObj.productId]));
+    });
+});
+var currentBids = new Map();
+setInterval(function () {
+    products.forEach(function (p) {
+        var currentBid = currentBids.get(p.id) || p.price;
+        var newBid = currentBid + Math.random() * 5;
+        currentBids.set(p.id, newBid);
+    });
+    subscriptions.forEach(function (productIds, ws) {
+        if (ws.readyState === 1) {
+            var newBids = productIds.map(function (pid) { return ({
+                productId: pid,
+                bid: currentBids.get(pid)
+            }); });
+            ws.send(JSON.stringify(newBids));
+        }
+        else {
+            subscriptions.delete(ws);
+        }
+    });
+}, 2000);
