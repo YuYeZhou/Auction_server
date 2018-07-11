@@ -1,8 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var express = require("express");
+var path = require("path");
 var ws_1 = require("ws");
 var app = express();
+app.use('/', express.static(path.join(__dirname, '..', 'client')));
 var Product = /** @class */ (function () {
     function Product(id, title, price, rating, desc, categories) {
         this.id = id;
@@ -41,9 +43,9 @@ var comments = [
     new Comment(3, 1, "2018-04-04 21: 22: 22", "王五", 2, "东西挺不错"),
     new Comment(4, 2, "2018-05-05 20: 22: 22", "赵六", 4, "东西还不错")
 ];
-app.get('/', function (req, res) {
-    res.send("Hello");
-});
+// app.get('/', (req, res) =>{
+//   res.send("Hello")
+// })
 app.get('/api/products', function (req, res) {
     var result = products;
     var params = req.query;

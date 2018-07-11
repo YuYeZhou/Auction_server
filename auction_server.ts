@@ -1,7 +1,10 @@
 import * as express  from 'express'
+import * as path from 'path'
 import { Server } from 'ws';
 
 const app = express ()
+
+app.use('/', express.static(path.join(__dirname, '..', 'client')))
 
 export class Product {
   constructor(
@@ -41,9 +44,9 @@ const comments: Comment[] = [
   new Comment(4, 2, "2018-05-05 20: 22: 22", "赵六", 4, "东西还不错")
 ]
 
-app.get('/', (req, res) =>{
-  res.send("Hello")
-})
+// app.get('/', (req, res) =>{
+//   res.send("Hello")
+// })
 
 app.get('/api/products', (req, res) =>{  
   let result = products
